@@ -103,12 +103,12 @@
     }
     const { error } = await client
       .from("tournament_settings")
-      .upsert({
-        id: 1,
+      .update({
         entry_fee: fee,
         whatsapp_group_url: link || null,
         updated_at: new Date().toISOString()
-      }, { onConflict: "id" });
+      })
+      .eq("id", 1);
     els.saveSettings.disabled = false;
     if (error) {
       console.error(error);
