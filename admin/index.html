@@ -9,6 +9,21 @@
 </head>
 <body>
 <main class="container admin-container">
+  <section id="loginCard" class="card admin-login-card">
+    <div>
+      <span class="eyebrow">SECURE ADMIN</span>
+      <h2>Admin Login</h2>
+      <p>Sign in with the admin account created in Supabase Authentication.</p>
+    </div>
+    <form id="loginForm" class="form-grid">
+      <label>Email<input id="loginEmail" type="email" autocomplete="email" required placeholder="Admin email"></label>
+      <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Password"></label>
+      <button class="primary-button" type="submit">Sign In</button>
+      <p id="loginError" class="field-error" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section id="dashboard" hidden>
   <section class="hero admin-hero">
     <span class="badge">ADMIN DASHBOARD</span>
     <h1>Tournament <span>Control.</span></h1>
@@ -49,7 +64,12 @@
       </table>
     </div>
     <p class="admin-note">Current dashboard uses browser-local registration data. A real shared database and secure admin authentication still require a backend connection; this static page does not pretend to be secure admin auth.</p>
+    <div class="admin-session">
+      <span id="adminEmail"></span>
+      <button id="logoutButton" class="secondary-button" type="button">Sign Out</button>
+    </div>
     <a class="back-link" href="../">← Back to registration</a>
+  </section>
   </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
