@@ -37,6 +37,27 @@
     <article class="stat-card"><span>Pending</span><strong id="pendingCount">0</strong></article>
   </section>
 
+  <section class="card admin-card settings-card">
+    <div class="admin-toolbar">
+      <div>
+        <span class="eyebrow">TOURNAMENT SETTINGS</span>
+        <h2>Control Center</h2>
+      </div>
+    </div>
+    <div class="settings-grid">
+      <label>Entry Fee (₹)
+        <input id="entryFeeInput" type="number" min="0" step="1" placeholder="50">
+      </label>
+      <label>WhatsApp Group Link
+        <input id="whatsappLinkInput" type="url" placeholder="https://chat.whatsapp.com/...">
+      </label>
+      <div class="settings-actions">
+        <button id="saveSettingsButton" class="primary-button" type="button">Save Settings</button>
+        <span id="settingsMessage" class="settings-message" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
   <section class="card admin-card">
     <div class="admin-toolbar">
       <div>
@@ -63,7 +84,7 @@
         <tbody id="playerTable"><tr><td colspan="7" class="empty-row">No registrations yet.</td></tr></tbody>
       </table>
     </div>
-    <p class="admin-note">Current dashboard uses browser-local registration data. A real shared database and secure admin authentication still require a backend connection; this static page does not pretend to be secure admin auth.</p>
+    <p class="admin-note">Registrations are loaded from Supabase. Tournament settings are editable only by an authenticated admin.</p>
     <div class="admin-session">
       <span id="adminEmail"></span>
       <button id="logoutButton" class="secondary-button" type="button">Sign Out</button>
