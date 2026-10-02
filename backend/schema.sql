@@ -80,3 +80,41 @@ with check (
 
 create index if not exists registrations_registered_at_idx
   on registrations (registered_at desc);
+
+-- Secure admin-only settings update RPC.
+create or replace function public.update_tournament_settings(
+  p_entry_fee integer,
+  p_whatsapp_group_url text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not private.is_admin() then
+    raise exception 'Not authorized';
+  end if;
+
+  if p_entry_fee < 0 then
+    raise exception 'Entry fee cannot be negative';
+  end if;
+
+  if p_whatsapp_group_url is not null
+     and p_whatsapp_group_url <> ''
+     and p_whatsapp_group_url !~* '^https://chat\.whatsapp\.com/' then
+    raise exception 'Invalid WhatsApp group link';
+  end if;
+
+  update public.tournament_settings
+  set entry_fee = p_entry_fee,
+      whatsapp_group_url = nullif(p_whatsapp_group_url, ''),
+      updated_at = now()
+  where id = 1;
+
+  return found;
+end;
+$$;
+
+revoke all on function public.update_tournament_settings(integer, text) from public;
+grant execute on function public.update_tournament_settings(integer, text) to authenticated;
