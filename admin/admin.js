@@ -1,12 +1,9 @@
 (() => {
   "use strict";
+
   const KEY = "pes_tournament_registrations_v1";
-  const getData = () => {
-    try {
-      const data = JSON.parse(localStorage.getItem(KEY) || "[]");
-      return Array.isArray(data) ? data : [];
-    } catch { return []; }
-  };
+  const SUPABASE_URL = "https://inligamwqciyhqionztd.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mXTRNsfI7hd_YuSbBKVrRQ_J0lAIk7h";
 
   const els = {
     total: document.getElementById("totalCount"),
@@ -20,6 +17,8 @@
     clear: document.getElementById("clearButton")
   };
 
+  let allRows = [];
+
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[char]));
@@ -31,17 +30,28 @@
     });
   };
 
+  const normalize = (row) => ({
+    id: row.registration_code,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    pesId: row.pes_id,
+    entryFee: row.entry_fee,
+    paymentStatus: row.payment_status,
+    registrationStatus: row.registration_status,
+    registeredAt: row.registered_at
+  });
+
   const render = () => {
-    const all = getData();
     const query = els.search.value.trim().toLowerCase();
     const status = els.filter.value;
 
-    els.total.textContent = all.length;
-    els.registered.textContent = all.filter(x => x.registrationStatus === "REGISTERED").length;
-    els.paid.textContent = all.filter(x => x.paymentStatus === "PAID").length;
-    els.pending.textContent = all.filter(x => x.paymentStatus === "PENDING").length;
+    els.total.textContent = allRows.length;
+    els.registered.textContent = allRows.filter(x => x.registrationStatus === "REGISTERED").length;
+    els.paid.textContent = allRows.filter(x => x.paymentStatus === "PAID").length;
+    els.pending.textContent = allRows.filter(x => x.paymentStatus === "PENDING").length;
 
-    const filtered = all.filter(item => {
+    const filtered = allRows.filter(item => {
       const haystack = [item.name, item.pesId, item.phone, item.email].join(" ").toLowerCase();
       const matchesQuery = !query || haystack.includes(query);
       const matchesStatus = status === "ALL" ||
@@ -68,12 +78,40 @@
     }).join("");
   };
 
+  const loadFromSupabase = async () => {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("Supabase client failed to load.");
+    }
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const { data, error } = await client
+      .from("registrations")
+      .select("*")
+      .order("registered_at", { ascending: false });
+
+    if (error) throw error;
+
+    allRows = (data || []).map(normalize);
+    localStorage.setItem(KEY, JSON.stringify(allRows));
+    render();
+  };
+
+  const showLoadError = (error) => {
+    console.error("Supabase admin load error:", error);
+    els.table.innerHTML = '<tr><td colspan="7" class="empty-row">Could not load registrations from the database.</td></tr>';
+    els.total.textContent = "—";
+    els.registered.textContent = "—";
+    els.paid.textContent = "—";
+    els.pending.textContent = "—";
+  };
+
   const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
   els.export.addEventListener("click", () => {
-    const rows = getData();
-    if (!rows.length) { alert("No registrations to export."); return; }
+    if (!allRows.length) { alert("No registrations to export."); return; }
     const header = ["Registration ID","Name","Phone","Email","PES ID","Entry Fee","Payment Status","Registration Status","Registered At"];
-    const body = rows.map(x => [x.id,x.name,x.phone,x.email,x.pesId,x.entryFee || 0,x.paymentStatus,x.registrationStatus,x.registeredAt]);
+    const body = allRows.map(x => [x.id,x.name,x.phone,x.email,x.pesId,x.entryFee || 0,x.paymentStatus,x.registrationStatus,x.registeredAt]);
     const csv = [header,...body].map(row => row.map(csvCell).join(",")).join("\n");
     const blob = new Blob(["\ufeff", csv], {type:"text/csv;charset=utf-8;"});
     const url = URL.createObjectURL(blob);
@@ -87,15 +125,11 @@
   });
 
   els.clear.addEventListener("click", () => {
-    if (!getData().length) return;
-    if (confirm("Delete all registration data stored in this browser?")) {
-      localStorage.removeItem(KEY);
-      render();
-    }
+    alert("Registrations are now stored in Supabase. Use the database/admin controls to manage them.");
   });
 
   els.search.addEventListener("input", render);
   els.filter.addEventListener("change", render);
-  window.addEventListener("storage", render);
-  render();
+
+  loadFromSupabase().catch(showLoadError);
 })();
