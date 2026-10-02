@@ -24,7 +24,11 @@
     search: document.getElementById("searchInput"),
     filter: document.getElementById("statusFilter"),
     export: document.getElementById("exportButton"),
-    clear: document.getElementById("clearButton")
+    clear: document.getElementById("clearButton"),
+    entryFeeInput: document.getElementById("entryFeeInput"),
+    whatsappLinkInput: document.getElementById("whatsappLinkInput"),
+    saveSettings: document.getElementById("saveSettingsButton"),
+    settingsMessage: document.getElementById("settingsMessage")
   };
 
   let allRows = [];
@@ -76,6 +80,44 @@
     }).join("") : '<tr><td colspan="7" class="empty-row">No matching registrations.</td></tr>';
   };
 
+  const loadSettings = async () => {
+    const { data, error } = await client
+      .from("tournament_settings")
+      .select("entry_fee, whatsapp_group_url")
+      .eq("id", 1)
+      .maybeSingle();
+    if (error) throw error;
+    els.entryFeeInput.value = Number(data?.entry_fee || 0);
+    els.whatsappLinkInput.value = data?.whatsapp_group_url || "";
+  };
+
+  const saveSettings = async () => {
+    els.settingsMessage.textContent = "Saving…";
+    els.saveSettings.disabled = true;
+    const fee = Math.max(0, Math.floor(Number(els.entryFeeInput.value || 0)));
+    const link = els.whatsappLinkInput.value.trim();
+    if (link && !/^https:\/\/chat\.whatsapp\.com\//i.test(link)) {
+      els.settingsMessage.textContent = "Use a valid WhatsApp group invite link.";
+      els.saveSettings.disabled = false;
+      return;
+    }
+    const { error } = await client
+      .from("tournament_settings")
+      .upsert({
+        id: 1,
+        entry_fee: fee,
+        whatsapp_group_url: link || null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "id" });
+    els.saveSettings.disabled = false;
+    if (error) {
+      console.error(error);
+      els.settingsMessage.textContent = "Could not save settings.";
+      return;
+    }
+    els.settingsMessage.textContent = "Settings saved ✓";
+  };
+
   const loadFromSupabase = async () => {
     const { data, error } = await client.from("registrations").select("*").order("registered_at", { ascending:false });
     if (error) throw error;
@@ -90,7 +132,9 @@
     els.dashboard.hidden = !loggedIn;
     if (!loggedIn) return;
     els.adminEmail.textContent = session.user.email || "";
-    try { await loadFromSupabase(); }
+    try {
+      await Promise.all([loadFromSupabase(), loadSettings()]);
+    }
     catch (error) {
       console.error(error);
       els.table.innerHTML = '<tr><td colspan="7" class="empty-row">Database access denied. Check the admin_users setup.</td></tr>';
@@ -120,6 +164,7 @@
   });
 
   els.clear.addEventListener("click", () => alert("Registrations are stored in Supabase. This button does not delete database records."));
+  els.saveSettings.addEventListener("click", saveSettings);
   els.search.addEventListener("input",render);
   els.filter.addEventListener("change",render);
 
