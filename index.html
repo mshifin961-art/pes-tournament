@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PES Tournament</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="container">
+  <section class="hero">
+    <span class="badge">PES TOURNAMENT</span>
+    <h1>Ready to compete?</h1>
+    <p>Register now for the tournament.</p>
+  </section>
+  <section class="card">
+    <h2>Player Registration</h2>
+    <form id="registrationForm">
+      <label>Full Name<input id="name" name="name" type="text" placeholder="Enter your name" required></label>
+      <label>Phone Number<input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="10-digit phone number" pattern="[0-9]{10}" maxlength="10" required></label>
+      <label>Gmail<input id="email" name="email" type="email" placeholder="example@gmail.com" required></label>
+      <label>PES ID<input id="pesId" name="pesId" type="text" placeholder="Enter your PES ID" required></label>
+      <button type="submit">Register</button>
+    </form>
+    <p class="note">Payment will be added after the tournament payment account is finalized.</p>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>
