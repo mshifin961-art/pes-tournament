@@ -9,6 +9,16 @@
   const successBox = document.getElementById("successBox");
   const registrationId = document.getElementById("registrationId");
   const button = document.getElementById("registerButton");
+  const entryFeeDisplay = document.getElementById("entryFeeDisplay");
+
+  let currentEntryFee = 0;
+
+  const loadEntryFee = async (client) => {
+    const { data, error } = await client.rpc("get_entry_fee");
+    if (error) throw error;
+    currentEntryFee = Math.max(0, Math.floor(Number(data || 0)));
+    if (entryFeeDisplay) entryFeeDisplay.textContent = `Entry fee: ₹${currentEntryFee}`;
+  };
 
   const getRegistrations = () => {
     try {
@@ -42,6 +52,19 @@
     setError("pesId", message);
     button.disabled = false;
   };
+
+  const bootstrap = async () => {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") return;
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    try {
+      await loadEntryFee(client);
+    } catch (error) {
+      console.error("Entry fee load error:", error);
+      if (entryFeeDisplay) entryFeeDisplay.textContent = "Entry fee unavailable";
+    }
+  };
+
+  bootstrap();
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -85,7 +108,7 @@
     const record = {
       id: makeId(),
       ...data,
-      entryFee: 0,
+      entryFee: currentEntryFee,
       paymentStatus: "PENDING",
       registrationStatus: "REGISTERED",
       registeredAt: new Date().toISOString()
