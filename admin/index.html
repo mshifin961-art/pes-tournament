@@ -1,1 +1,57 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PES Tournament Admin</title><link rel="stylesheet" href="../style.css"></head><body><main class="container"><section class="hero"><span class="badge">ADMIN PANEL</span><h1>PES Tournament</h1><p>Registration management</p></section><section class="card"><h2>Dashboard</h2><p class="note">Database and secure admin authentication will be connected in the next step. This page is intentionally not treating browser data as a real production database.</p><button onclick="location.href='../'">Back to Registration</button></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<title>PES Tournament — Admin</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<main class="container admin-container">
+  <section class="hero admin-hero">
+    <span class="badge">ADMIN DASHBOARD</span>
+    <h1>Tournament <span>Control.</span></h1>
+    <p>Manage registrations, review player details and export your tournament list.</p>
+  </section>
+
+  <section class="stats-grid">
+    <article class="stat-card"><span>Total Registrations</span><strong id="totalCount">0</strong></article>
+    <article class="stat-card"><span>Registered</span><strong id="registeredCount">0</strong></article>
+    <article class="stat-card"><span>Paid</span><strong id="paidCount">0</strong></article>
+    <article class="stat-card"><span>Pending</span><strong id="pendingCount">0</strong></article>
+  </section>
+
+  <section class="card admin-card">
+    <div class="admin-toolbar">
+      <div>
+        <span class="eyebrow">PLAYER LIST</span>
+        <h2>Registrations</h2>
+      </div>
+      <div class="toolbar-actions">
+        <input id="searchInput" class="search-input" type="search" placeholder="Search name / PES ID / phone">
+        <select id="statusFilter" class="status-filter" aria-label="Filter status">
+          <option value="ALL">All statuses</option>
+          <option value="REGISTERED">Registered</option>
+          <option value="PAID">Paid</option>
+          <option value="PENDING">Pending</option>
+          <option value="FAILED">Failed</option>
+        </select>
+        <button id="exportButton" class="secondary-button" type="button">Export CSV</button>
+        <button id="clearButton" class="danger-button" type="button">Clear Local Data</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Player</th><th>PES ID</th><th>Phone</th><th>Email</th><th>Fee</th><th>Status</th><th>Registered</th></tr></thead>
+        <tbody id="playerTable"><tr><td colspan="7" class="empty-row">No registrations yet.</td></tr></tbody>
+      </table>
+    </div>
+    <p class="admin-note">Current dashboard uses browser-local registration data. A real shared database and secure admin authentication still require a backend connection; this static page does not pretend to be secure admin auth.</p>
+    <a class="back-link" href="../">← Back to registration</a>
+  </section>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>
