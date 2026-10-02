@@ -101,14 +101,10 @@
       els.saveSettings.disabled = false;
       return;
     }
-    const { error } = await client
-      .from("tournament_settings")
-      .update({
-        entry_fee: fee,
-        whatsapp_group_url: link || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", 1);
+    const { error } = await client.rpc("update_tournament_settings", {
+      p_entry_fee: fee,
+      p_whatsapp_group_url: link || null
+    });
     els.saveSettings.disabled = false;
     if (error) {
       console.error(error);
